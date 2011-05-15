@@ -1,0 +1,78 @@
+#!/usr/bin/make -f
+
+
+export DH_COMPAT=4
+
+SHELL = /bin/bash
+
+CFLAGS = -Wall -g
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+
+ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+	INSTALL_PROGRAM += -s
+endif
+
+# Use soft-float and thumb mode if it enabled.
+ifneq (,$(findstring thumb,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -mthumb
+endif
+
+export CFLAGS
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	tar -xjf freetype-2.3.9.tar.bz2
+	patch -p0 < security-CVE-2009-0946.patch
+	patch -p0 < armel-asm-declaration.patch
+	cd freetype-2.3.9 && ./configure --prefix=/usr --sysconfdir=/etc
+	touch configure-stamp
+
+
+build: configure-stamp build-stamp
+build-stamp:
+	dh_testdir
+	$(MAKE) -C freetype-2.3.9
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp configure-stamp
+	rm -rf freetype-2.3.9
+	rm -fr objs/.libs
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+	$(MAKE) -C freetype-2.3.9 install DESTDIR=$(CURDIR)/debian/tmp
+	
+
+binary-indep: build install
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_makeshlibs -V
+	dh_installchangelogs
+	dh_install --sourcedir=debian/tmp -v
+	dh_strip --dbg-package=libfreetype6
+	dh_link
+	dh_fixperms
+	dh_makeshlibs -V
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure

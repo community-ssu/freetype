@@ -1,0 +1,59 @@
+freetype (2.3.9-1osso2+0m5) unstable; urgency=low
+
+  * This entry has been added by BIFH queue processor
+    Suffix +0m5 added to package revision
+
+ -- Kojo Aapo <aapo.kojo@nokia.com>  Fri, 05 Jun 2009 08:10:30 +0300
+
+freetype (2.3.9-1osso2) unstable; urgency=low
+
+  * Added: armel-asm-declaration.patch to fix a build failure on armel
+
+ -- Richard Sun <richard.sun@nokia.com>  Thu,  4 Jun 2009 11:17:35 +0300
+
+freetype (2.3.9-1osso1) unstable; urgency=low
+
+  * Updated: Sync with upstream stable version
+  * Added: security-CVE-2009-0946.patch from Ubuntu jaunty-security
+  * Fixes: NB#111884 Multiple integer overflows in FreeType 2.3.9
+  * Fixes: NB#86647 Freetype arbitrary code execution vulnerabilities
+
+ -- Richard Sun <richard.sun@nokia.com>  Wed,  3 Jun 2009 18:17:13 +0300
+
+freetype (2.3.5-1osso1) unstable; urgency=low
+
+  * Updated: Upstream update from 2.2.1 to 2.3.5
+  * Fixes: NB#57670
+  * Removed: patch for CVE-2006-3467, which is already merged to
+    upstream. 
+
+ -- Richard Sun <richard.sun@nokia.com>  Thu, 13 Dec 2007 15:55:37 +0200
+
+freetype (2.2.1-1osso3) unstable; urgency=low
+
+  * Fixes: NB#46810 
+
+ -- Richard Sun <richard.sun@nokia.com>  Mon, 20 Nov 2006 12:49:15 +0200
+
+freetype (2.2.1-1osso2) unstable; urgency=low
+
+  * Applied Debian patch for CVE-2006-3467 - when this one gets merged to
+    upstream freetype we can remove it.
+  * Editing the debian/copyright file: FTL license
+  * Fixes: NB#40636
+
+ -- Jakub Pavelek <jakub.pavelek@nokia.com>  Wed, 27 Sep 2006 17:15:59 +0300
+
+freetype (2.2.1-1osso1) unstable; urgency=low
+
+  * Upstream update from 2.1.10 to 2.2.1
+  * Bugfixes, fixes NB#26659, NB#33547, NB#36268, NB#36269
+  * Updated packaging
+
+ -- Jakub Pavelek <jakub.pavelek@nokia.com>  Mon, 31 Jul 2006 15:54:22 +0300
+
+freetype (2.1.10-1osso2) unstable; urgency=low
+
+  * Fixes for SDK
+
+ -- Jakub Pavelek <jakub.pavelek@nokia.com>  Fri,  7 Oct 2005 10:53:09 +0300
