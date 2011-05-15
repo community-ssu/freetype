@@ -1,0 +1,300 @@
+diff --git a/src/cache/ftcbasic.c b/src/cache/ftcbasic.c
+index f9c75f3..1042644 100644
+--- freetype-2.3.9/src/cache/ftcbasic.c
++++ b/src/cache/ftcbasic.c
+@@ -316,7 +316,7 @@
+                          FTC_Node       *anode )
+   {
+     FTC_BasicQueryRec  query;
+-    FTC_INode          node = 0;  /* make compiler happy */
++    FTC_Node           node = 0; /* make compiler happy */
+     FT_Error           error;
+     FT_UInt32          hash;
+ 
+@@ -383,7 +383,7 @@
+     error = FTC_GCache_Lookup( FTC_GCACHE( cache ),
+                                hash, gindex,
+                                FTC_GQUERY( &query ),
+-                               (FTC_Node*) &node );
++                               &node );
+ #endif
+     if ( !error )
+     {
+@@ -391,8 +391,8 @@
+ 
+       if ( anode )
+       {
+-        *anode = FTC_NODE( node );
+-        FTC_NODE( node )->ref_count++;
++        *anode = node;
++        node->ref_count++;
+       }
+     }
+ 
+@@ -412,7 +412,7 @@
+                                FTC_Node       *anode )
+   {
+     FTC_BasicQueryRec  query;
+-    FTC_INode          node = 0;  /* make compiler happy */
++    FTC_Node           node = 0; /* make compiler happy */
+     FT_Error           error;
+     FT_UInt32          hash;
+ 
+@@ -453,8 +453,8 @@
+ 
+       if ( anode )
+       {
+-        *anode = FTC_NODE( node );
+-        FTC_NODE( node )->ref_count++;
++        *anode = node;
++        node->ref_count++;
+       }
+     }
+ 
+@@ -655,7 +655,7 @@
+   {
+     FT_Error           error;
+     FTC_BasicQueryRec  query;
+-    FTC_SNode          node = 0; /* make compiler happy */
++    FTC_Node           node = 0; /* make compiler happy */
+     FT_UInt32          hash;
+ 
+ 
+@@ -721,17 +721,17 @@
+                                hash,
+                                gindex,
+                                FTC_GQUERY( &query ),
+-                               (FTC_Node*)&node );
++                               &node );
+ #endif
+     if ( error )
+       goto Exit;
+ 
+-    *ansbit = node->sbits + ( gindex - FTC_GNODE( node )->gindex );
++    *ansbit = FTC_SNODE( node )->sbits + ( gindex - FTC_GNODE( node )->gindex );
+ 
+     if ( anode )
+     {
+-      *anode = FTC_NODE( node );
+-      FTC_NODE( node )->ref_count++;
++      *anode = node;
++      node->ref_count++;
+     }
+ 
+   Exit:
+@@ -751,7 +751,7 @@
+   {
+     FT_Error           error;
+     FTC_BasicQueryRec  query;
+-    FTC_SNode          node = 0; /* make compiler happy */
++    FTC_Node           node = 0; /* make compiler happy */
+     FT_UInt32          hash;
+ 
+ 
+@@ -788,12 +788,12 @@
+     if ( error )
+       goto Exit;
+ 
+-    *ansbit = node->sbits + ( gindex - FTC_GNODE( node )->gindex );
++    *ansbit = FTC_SNODE( node )->sbits + ( gindex - FTC_GNODE( node )->gindex );
+ 
+     if ( anode )
+     {
+-      *anode = FTC_NODE( node );
+-      FTC_NODE( node )->ref_count++;
++      *anode = node;
++      node->ref_count++;
+     }
+ 
+   Exit:
+diff --git freetype-2.3.9/src/cache/ftccmap.c b/src/cache/ftccmap.c
+index 50a6189..428cebb 100644
+--- freetype-2.3.9/src/cache/ftccmap.c
++++ b/src/cache/ftccmap.c
+@@ -283,7 +283,7 @@
+   {
+     FTC_Cache         cache = FTC_CACHE( cmap_cache );
+     FTC_CMapQueryRec  query;
+-    FTC_CMapNode      node;
++    FTC_Node          node;
+     FT_Error          error;
+     FT_UInt           gindex = 0;
+     FT_UInt32         hash;
+@@ -373,18 +373,18 @@
+     FTC_CACHE_LOOKUP_CMP( cache, ftc_cmap_node_compare, hash, &query,
+                           node, error );
+ #else
+-    error = FTC_Cache_Lookup( cache, hash, &query, (FTC_Node*) &node );
++    error = FTC_Cache_Lookup( cache, hash, &query, &node );
+ #endif
+     if ( error )
+       goto Exit;
+ 
+-    FT_ASSERT( (FT_UInt)( char_code - node->first ) < FTC_CMAP_INDICES_MAX );
++    FT_ASSERT( (FT_UInt)( char_code - FTC_CMAP_NODE( node )->first ) < FTC_CMAP_INDICES_MAX );
+ 
+     /* something rotten can happen with rogue clients */
+-    if ( (FT_UInt)( char_code - node->first >= FTC_CMAP_INDICES_MAX ) )
++    if ( (FT_UInt)( char_code - FTC_CMAP_NODE( node )->first >= FTC_CMAP_INDICES_MAX ) )
+       return 0;
+ 
+-    gindex = node->indices[char_code - node->first];
++    gindex = FTC_CMAP_NODE( node )->indices[char_code - FTC_CMAP_NODE( node )->first];
+     if ( gindex == FTC_CMAP_UNKNOWN )
+     {
+       FT_Face  face;
+@@ -392,7 +392,7 @@
+ 
+       gindex = 0;
+ 
+-      error = FTC_Manager_LookupFace( cache->manager, node->face_id, &face );
++      error = FTC_Manager_LookupFace( cache->manager, FTC_CMAP_NODE( node )->face_id, &face );
+       if ( error )
+         goto Exit;
+ 
+@@ -413,7 +413,7 @@
+           FT_Set_Charmap( face, old );
+       }
+ 
+-      node->indices[char_code - node->first] = (FT_UShort)gindex;
++      FTC_CMAP_NODE( node )->indices[char_code - FTC_CMAP_NODE( node )->first] = (FT_UShort)gindex;
+     }
+ 
+   Exit:
+diff --git freetype-2.3.9/src/cache/ftcglyph.h b/src/cache/ftcglyph.h
+index 87a4199..c18f9c3 100644
+--- freetype-2.3.9/src/cache/ftcglyph.h
++++ b/src/cache/ftcglyph.h
+@@ -277,12 +277,14 @@ FT_BEGIN_HEADER
+     FTC_GCache               _gcache   = FTC_GCACHE( cache );               \
+     FTC_GQuery               _gquery   = (FTC_GQuery)( query );             \
+     FTC_MruNode_CompareFunc  _fcompare = (FTC_MruNode_CompareFunc)(famcmp); \
++    FTC_MruNode              _mrunode;                                      \
+                                                                             \
+                                                                             \
+     _gquery->gindex = (gindex);                                             \
+                                                                             \
+     FTC_MRULIST_LOOKUP_CMP( &_gcache->families, _gquery, _fcompare,         \
+-                            _gquery->family, error );                       \
++                            _mrunode, error );                              \
++    _gquery->family = FTC_FAMILY( _mrunode );                               \
+     if ( !error )                                                           \
+     {                                                                       \
+       FTC_Family  _gqfamily = _gquery->family;                              \
+@@ -303,11 +305,10 @@ FT_BEGIN_HEADER
+ #define FTC_GCACHE_LOOKUP_CMP( cache, famcmp, nodecmp, hash,          \
+                                gindex, query, node, error )           \
+    FT_BEGIN_STMNT                                                     \
+-     void*  _n = &(node);                                             \
+-                                                                      \
+                                                                       \
+      error = FTC_GCache_Lookup( FTC_GCACHE( cache ), hash, gindex,    \
+-                                FTC_GQUERY( query ), (FTC_Node*)_n ); \
++                                FTC_GQUERY( query ), node );          \
++                                                                      \
+    FT_END_STMNT
+ 
+ #endif /* !FTC_INLINE */
+diff --git freetype-2.3.9/src/cache/ftcmanag.c b/src/cache/ftcmanag.c
+index 8436bd0..f2a298e 100644
+--- freetype-2.3.9/src/cache/ftcmanag.c
++++ b/src/cache/ftcmanag.c
+@@ -82,6 +82,8 @@
+ 
+   } FTC_SizeNodeRec, *FTC_SizeNode;
+ 
++#define FTC_SIZE_NODE( x ) ( (FTC_SizeNode)( x ) )
++
+ 
+   FT_CALLBACK_DEF( void )
+   ftc_size_node_done( FTC_MruNode  ftcnode,
+@@ -180,8 +182,8 @@
+                           FTC_Scaler   scaler,
+                           FT_Size     *asize )
+   {
+-    FT_Error      error;
+-    FTC_SizeNode  node;
++    FT_Error     error;
++    FTC_MruNode  mrunode;
+ 
+ 
+     if ( asize == NULL )
+@@ -195,14 +197,14 @@
+ #ifdef FTC_INLINE
+ 
+     FTC_MRULIST_LOOKUP_CMP( &manager->sizes, scaler, ftc_size_node_compare,
+-                            node, error );
++                            mrunode, error );
+ 
+ #else
+-    error = FTC_MruList_Lookup( &manager->sizes, scaler, (FTC_MruNode*)&node );
++    error = FTC_MruList_Lookup( &manager->sizes, scaler, &mrunode );
+ #endif
+ 
+     if ( !error )
+-      *asize = node->size;
++      *asize = FTC_SIZE_NODE( mrunode )->size;
+ 
+     return error;
+   }
+@@ -224,6 +226,8 @@
+ 
+   } FTC_FaceNodeRec, *FTC_FaceNode;
+ 
++#define FTC_FACE_NODE( x ) ( ( FTC_FaceNode )( x ) )
++
+ 
+   FT_CALLBACK_DEF( FT_Error )
+   ftc_face_node_init( FTC_MruNode  ftcnode,
+@@ -305,8 +309,8 @@
+                           FTC_FaceID   face_id,
+                           FT_Face     *aface )
+   {
+-    FT_Error      error;
+-    FTC_FaceNode  node;
++    FT_Error     error;
++    FTC_MruNode  mrunode;
+ 
+ 
+     if ( aface == NULL )
+@@ -321,14 +325,14 @@
+ #ifdef FTC_INLINE
+ 
+     FTC_MRULIST_LOOKUP_CMP( &manager->faces, face_id, ftc_face_node_compare,
+-                            node, error );
++                            mrunode, error );
+ 
+ #else
+-    error = FTC_MruList_Lookup( &manager->faces, face_id, (FTC_MruNode*)&node );
++    error = FTC_MruList_Lookup( &manager->faces, face_id, &mrunode );
+ #endif
+ 
+     if ( !error )
+-      *aface = node->face;
++      *aface = FTC_FACE_NODE( mrunode )->face;
+ 
+     return error;
+   }
+diff --git freetype-2.3.9/src/cache/ftcmru.h b/src/cache/ftcmru.h
+index 0cda76e..5739439 100644
+--- freetype-2.3.9/src/cache/ftcmru.h
++++ b/src/cache/ftcmru.h
+@@ -163,7 +163,7 @@ FT_BEGIN_HEADER
+   FT_BEGIN_STMNT                                                            \
+     FTC_MruNode*             _pfirst  = &(list)->nodes;                     \
+     FTC_MruNode_CompareFunc  _compare = (FTC_MruNode_CompareFunc)(compare); \
+-    FTC_MruNode              _first, _node, *_pnode;                        \
++    FTC_MruNode              _first, _node;                                 \
+                                                                             \
+                                                                             \
+     error  = 0;                                                             \
+@@ -180,8 +180,7 @@ FT_BEGIN_HEADER
+           if ( _node != _first )                                            \
+             FTC_MruNode_Up( _pfirst, _node );                               \
+                                                                             \
+-          _pnode = (FTC_MruNode*)(void*)&(node);                            \
+-          *_pnode = _node;                                                  \
++          node = _node;                                                     \
+           goto _MruOk;                                                      \
+         }                                                                   \
+         _node = _node->next;                                                \
