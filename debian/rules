@@ -31,6 +31,7 @@ configure-stamp:
 	patch -p0 < security-CVE-2009-0946.patch
 	patch -p0 < armel-asm-declaration.patch
 	patch -p0 < redhat_bugzilla_513582.patch
+	patch -p0 < security-CVE-2010-1797.patch
 	cd freetype-2.3.9 && ./configure --prefix=/usr --sysconfdir=/etc
 	touch configure-stamp
 
