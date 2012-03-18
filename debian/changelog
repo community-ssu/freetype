@@ -1,3 +1,10 @@
+freetype (2.3.9-2osso2+0cssu1) unstable; urgency=low
+
+  * CVE-2010-1797
+  * Fixed segmentation fault.
+
+ -- Mohammad Abu-Garbeyyeh <mohammad7410@gmail.com>  Sun, 18 Mar 2012 19:50:02 +0200
+
 freetype (2.3.9-1osso2+0m5) unstable; urgency=low
 
   * This entry has been added by BIFH queue processor
