@@ -1,4 +1,4 @@
-freetype (2.3.9-2osso2+0cssu1) unstable; urgency=low
+freetype (2.3.9-1osso2+0m5+0cssu1) unstable; urgency=low
 
   * CVE-2010-1797
   * Fixed segmentation fault.
